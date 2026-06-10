@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DASH Widevine Player</title>
+<title>DASH ClearKey Player</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.11/shaka-player.compiled.min.js"></script>
 
@@ -25,6 +25,9 @@ html,body{
     position:relative;
     width:100vw;
     height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     background:#000;
 }
 
@@ -50,7 +53,7 @@ video{
     border:1px solid rgba(255,255,255,.85);
     border-radius:6px;
 
-    color:#fff;
+    color:#d9d9d9;
     font-family:Arial,sans-serif;
     font-size:16px;
     letter-spacing:1px;
@@ -90,7 +93,7 @@ video{
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
+async function initPlayer() {
 
     shaka.polyfill.installAll();
 
@@ -108,15 +111,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Shaka Error:', event.detail);
     });
 
+    // DRM ClearKey
+    const clearKey =
+        'd48b6088253c443eb94d27cb7828f707:e9776141f9e949273a072b0e035070ab';
+
+    const [kid, key] = clearKey.split(':');
+
     player.configure({
         drm: {
-            servers: {
-                'com.widevine.alpha':
-                'https://bosstv.asia/1qq/20886.drm'
+            clearKeys: {
+                [kid]: key
             }
         }
     });
 
+    // Tombol unmute
     unmuteBtn.addEventListener('click', async () => {
         try {
             video.muted = false;
@@ -126,10 +135,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             unmuteBtn.classList.add('hide');
         } catch (err) {
-            console.error(err);
+            console.error('Unmute Error:', err);
         }
     });
 
+    // Tampilkan/sembunyikan tombol sesuai status mute
     video.addEventListener('volumechange', () => {
         if (!video.muted && video.volume > 0) {
             unmuteBtn.classList.add('hide');
@@ -141,11 +151,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
 
         await player.load(
-            'https://geogersr.itilstrem.workers.dev/https://bosstv.asia/1qq/20886.mpd'
+            'https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(Bein1)/master.mpd'
         );
 
-        console.log('Widevine stream loaded');
+        console.log('Stream berhasil dimuat');
 
+        // Pastikan autoplay berjalan
         await video.play();
 
     } catch (error) {
@@ -153,8 +164,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Load Error:', error);
 
     }
+}
 
-});
+document.addEventListener('DOMContentLoaded', initPlayer);
 </script>
 
 </body>
