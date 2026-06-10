@@ -66,8 +66,61 @@ async function initPlayer() {
         console.error('Shaka Error:', event.detail);
     });
 
+    // Buat tombol unmute
+    const unmuteBtn = document.createElement('button');
+    unmuteBtn.id = 'unmuteBtn';
+    unmuteBtn.innerText = 'CLICK HERE TO UNMUTE';
+
+    Object.assign(unmuteBtn.style, {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: '9999',
+        padding: '12px 24px',
+        fontSize: '20px',
+        color: '#fff',
+        background: 'rgba(0,0,0,0.55)',
+        border: '2px solid rgba(255,255,255,0.8)',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        transition: 'opacity .3s ease'
+    });
+
+    document.querySelector('.player-container').style.position = 'relative';
+    document.querySelector('.player-container').appendChild(unmuteBtn);
+
+    // Klik tombol untuk unmute
+    unmuteBtn.addEventListener('click', async () => {
+        try {
+            video.muted = false;
+            video.volume = 1;
+            await video.play();
+
+            unmuteBtn.style.opacity = '0';
+            unmuteBtn.style.pointerEvents = 'none';
+        } catch (err) {
+            console.error('Unmute gagal:', err);
+        }
+    });
+
+    // Sembunyikan tombol jika user unmute dari kontrol video
+    video.addEventListener('volumechange', () => {
+        if (!video.muted && video.volume > 0) {
+            unmuteBtn.style.opacity = '0';
+            unmuteBtn.style.pointerEvents = 'none';
+        } else {
+            unmuteBtn.style.opacity = '1';
+            unmuteBtn.style.pointerEvents = 'auto';
+        }
+    });
+
     try {
-        await player.load('https://live.cnbcindonesia.com/livecnbc/smil:cnbctv.smil/playlist.m3u8');
+        await player.load(
+            'https://live.cnbcindonesia.com/livecnbc/smil:cnbctv.smil/playlist.m3u8'
+        );
         console.log('Stream berhasil dimuat');
     } catch (error) {
         console.error('Load Error:', error);
