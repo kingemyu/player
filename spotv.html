@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH ClearKey Player</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.11/shaka-player.compiled.min.js"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    background:#000;
+    overflow:hidden;
+}
+
+.player-container{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#000;
+}
+
+video{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#000;
+}
+
+#unmuteBtn{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    z-index:9999;
+
+    width:340px;
+    max-width:90%;
+    height:42px;
+
+    background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:6px;
+
+    color:#d9d9d9;
+    font-family:Arial,sans-serif;
+    font-size:16px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+
+    cursor:pointer;
+
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+
+    transition:all .3s ease;
+}
+
+#unmuteBtn.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<div class="player-container">
+
+    <video
+        id="video"
+        controls
+        autoplay
+        muted
+        playsinline>
+    </video>
+
+    <button id="unmuteBtn">
+        CLICK HERE TO UNMUTE
+    </button>
+
+</div>
+
+<script>
+async function initPlayer() {
+
+    shaka.polyfill.installAll();
+
+    if (!shaka.Player.isBrowserSupported()) {
+        console.error('Browser tidak mendukung Shaka Player');
+        return;
+    }
+
+    const video = document.getElementById('video');
+    const unmuteBtn = document.getElementById('unmuteBtn');
+
+    const player = new shaka.Player(video);
+
+    player.addEventListener('error', (event) => {
+        console.error('Shaka Error:', event.detail);
+    });
+
+    // DRM ClearKey
+    const clearKey =
+        'ec7ee27d83764e4b845c48cca31c8eef:9c0e4191203fccb0fde34ee29999129e';
+
+    const [kid, key] = clearKey.split(':');
+
+    player.configure({
+        drm: {
+            clearKeys: {
+                [kid]: key
+            }
+        }
+    });
+
+    // Tombol unmute
+    unmuteBtn.addEventListener('click', async () => {
+        try {
+            video.muted = false;
+            video.volume = 1;
+
+            await video.play();
+
+            unmuteBtn.classList.add('hide');
+        } catch (err) {
+            console.error('Unmute Error:', err);
+        }
+    });
+
+    // Tampilkan/sembunyikan tombol sesuai status mute
+    video.addEventListener('volumechange', () => {
+        if (!video.muted && video.volume > 0) {
+            unmuteBtn.classList.add('hide');
+        } else {
+            unmuteBtn.classList.remove('hide');
+        }
+    });
+
+    try {
+
+        await player.load(
+            'https://qp-pldt-live-bpk-01-prod.akamaized.net/bpk-tv/cg_spotvhd/default/index.mpd'
+        );
+
+        console.log('Stream berhasil dimuat');
+
+        // Pastikan autoplay berjalan
+        await video.play();
+
+    } catch (error) {
+
+        console.error('Load Error:', error);
+
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initPlayer);
+</script>
+
+</body>
+</html>
