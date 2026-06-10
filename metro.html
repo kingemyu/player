@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <title>Player</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH ClearKey Player</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.11/shaka-player.compiled.min.js"></script>
 
@@ -26,6 +25,9 @@ html,body{
     position:relative;
     width:100vw;
     height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     background:#000;
 }
 
@@ -52,8 +54,8 @@ video{
     border-radius:6px;
 
     color:#d9d9d9;
-    font-size:16px;
     font-family:Arial,sans-serif;
+    font-size:16px;
     letter-spacing:1px;
     text-transform:uppercase;
 
@@ -78,9 +80,9 @@ video{
 
     <video
         id="video"
+        controls
         autoplay
         muted
-        controls
         playsinline>
     </video>
 
@@ -91,12 +93,12 @@ video{
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
+async function initPlayer() {
 
     shaka.polyfill.installAll();
 
     if (!shaka.Player.isBrowserSupported()) {
-        alert('Browser tidak mendukung Shaka Player');
+        console.error('Browser tidak mendukung Shaka Player');
         return;
     }
 
@@ -105,54 +107,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const player = new shaka.Player(video);
 
-    player.addEventListener('error', (e) => {
-        console.error('Shaka Error:', e.detail);
+    player.addEventListener('error', (event) => {
+        console.error('Shaka Error:', event.detail);
     });
 
+    // DRM ClearKey
+    const clearKey =
+        'c64493155d8b443c834a13d4970cf834:509294911ac3c2d779ae2225a23460b4';
+
+    const [kid, key] = clearKey.split(':');
+
+    player.configure({
+        drm: {
+            clearKeys: {
+                [kid]: key
+            }
+        }
+    });
+
+    // Tombol unmute
     unmuteBtn.addEventListener('click', async () => {
-
         try {
-
             video.muted = false;
             video.volume = 1;
 
             await video.play();
 
             unmuteBtn.classList.add('hide');
-
         } catch (err) {
-
-            console.error(err);
-
+            console.error('Unmute Error:', err);
         }
-
     });
 
+    // Tampilkan/sembunyikan tombol sesuai status mute
     video.addEventListener('volumechange', () => {
-
         if (!video.muted && video.volume > 0) {
             unmuteBtn.classList.add('hide');
         } else {
             unmuteBtn.classList.remove('hide');
         }
-
     });
 
     try {
 
         await player.load(
-            'https://op-group1-swiftservehd-1.dens.tv/h/h211/index.m3u8'
+            'https://geogersr.itilstrem.workers.dev/https://fta2-cdn-flr.visionplus.id/out/v1/fd4360b1c12c4375848c8f085fd51d41/index.mpd'
         );
 
         console.log('Stream berhasil dimuat');
+
+        // Pastikan autoplay berjalan
+        await video.play();
 
     } catch (error) {
 
         console.error('Load Error:', error);
 
     }
+}
 
-});
+document.addEventListener('DOMContentLoaded', initPlayer);
 </script>
 
 </body>
