@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DASH ClearKey Player</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Player</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.11/shaka-player.compiled.min.js"></script>
 
@@ -25,9 +26,6 @@ html,body{
     position:relative;
     width:100vw;
     height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     background:#000;
 }
 
@@ -54,8 +52,8 @@ video{
     border-radius:6px;
 
     color:#d9d9d9;
-    font-family:Arial,sans-serif;
     font-size:16px;
+    font-family:Arial,sans-serif;
     letter-spacing:1px;
     text-transform:uppercase;
 
@@ -80,9 +78,9 @@ video{
 
     <video
         id="video"
-        controls
         autoplay
         muted
+        controls
         playsinline>
     </video>
 
@@ -93,12 +91,12 @@ video{
 </div>
 
 <script>
-async function initPlayer() {
+document.addEventListener('DOMContentLoaded', async () => {
 
     shaka.polyfill.installAll();
 
     if (!shaka.Player.isBrowserSupported()) {
-        console.error('Browser tidak mendukung Shaka Player');
+        alert('Browser tidak mendukung Shaka Player');
         return;
     }
 
@@ -107,66 +105,54 @@ async function initPlayer() {
 
     const player = new shaka.Player(video);
 
-    player.addEventListener('error', (event) => {
-        console.error('Shaka Error:', event.detail);
+    player.addEventListener('error', (e) => {
+        console.error('Shaka Error:', e.detail);
     });
 
-    // DRM ClearKey
-    const clearKey =
-        'd48b6088253c443eb94d27cb7828f707:e9776141f9e949273a072b0e035070ab';
-
-    const [kid, key] = clearKey.split(':');
-
-    player.configure({
-        drm: {
-            clearKeys: {
-                [kid]: key
-            }
-        }
-    });
-
-    // Tombol unmute
     unmuteBtn.addEventListener('click', async () => {
+
         try {
+
             video.muted = false;
             video.volume = 1;
 
             await video.play();
 
             unmuteBtn.classList.add('hide');
+
         } catch (err) {
-            console.error('Unmute Error:', err);
+
+            console.error(err);
+
         }
+
     });
 
-    // Tampilkan/sembunyikan tombol sesuai status mute
     video.addEventListener('volumechange', () => {
+
         if (!video.muted && video.volume > 0) {
             unmuteBtn.classList.add('hide');
         } else {
             unmuteBtn.classList.remove('hide');
         }
+
     });
 
     try {
 
         await player.load(
-            'https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(Bein1)/master.mpd'
+            'https://cilok99.serv00.net/ythls/xxxx.py/play.m3u8?id=UCNlU3oSU8UnJ_V9uMB-cPOg'
         );
 
         console.log('Stream berhasil dimuat');
-
-        // Pastikan autoplay berjalan
-        await video.play();
 
     } catch (error) {
 
         console.error('Load Error:', error);
 
     }
-}
 
-document.addEventListener('DOMContentLoaded', initPlayer);
+});
 </script>
 
 </body>
