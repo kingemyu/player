@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DASH ClearKey Player</title>
+<title>DASH Widevine Player</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.11/shaka-player.compiled.min.js"></script>
 
@@ -25,9 +25,6 @@ html,body{
     position:relative;
     width:100vw;
     height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     background:#000;
 }
 
@@ -53,7 +50,7 @@ video{
     border:1px solid rgba(255,255,255,.85);
     border-radius:6px;
 
-    color:#d9d9d9;
+    color:#fff;
     font-family:Arial,sans-serif;
     font-size:16px;
     letter-spacing:1px;
@@ -93,7 +90,7 @@ video{
 </div>
 
 <script>
-async function initPlayer() {
+document.addEventListener('DOMContentLoaded', async () => {
 
     shaka.polyfill.installAll();
 
@@ -111,21 +108,15 @@ async function initPlayer() {
         console.error('Shaka Error:', event.detail);
     });
 
-    // DRM ClearKey
-    const clearKey =
-        '1539f043249e413d91906036f305831e:671e24fd8d234c7f38d85055815f902a';
-
-    const [kid, key] = clearKey.split(':');
-
     player.configure({
         drm: {
-            clearKeys: {
-                [kid]: key
+            servers: {
+                'com.widevine.alpha':
+                'https://geogersr.itilstrem.workers.dev/https://bosstv.asia/1qq/20886.drm'
             }
         }
     });
 
-    // Tombol unmute
     unmuteBtn.addEventListener('click', async () => {
         try {
             video.muted = false;
@@ -135,11 +126,10 @@ async function initPlayer() {
 
             unmuteBtn.classList.add('hide');
         } catch (err) {
-            console.error('Unmute Error:', err);
+            console.error(err);
         }
     });
 
-    // Tampilkan/sembunyikan tombol sesuai status mute
     video.addEventListener('volumechange', () => {
         if (!video.muted && video.volume > 0) {
             unmuteBtn.classList.add('hide');
@@ -151,12 +141,11 @@ async function initPlayer() {
     try {
 
         await player.load(
-            'https://geogersr.itilstrem.workers.dev/https://d2tjypxxy769fn.cloudfront.net/out/v1/46d9cf39b9a84183b8d5022ac8f4bc41/index.mpd'
+            'https://geogersr.itilstrem.workers.dev/https://bosstv.asia/1qq/20886.mpd'
         );
 
-        console.log('Stream berhasil dimuat');
+        console.log('Widevine stream loaded');
 
-        // Pastikan autoplay berjalan
         await video.play();
 
     } catch (error) {
@@ -164,9 +153,8 @@ async function initPlayer() {
         console.error('Load Error:', error);
 
     }
-}
 
-document.addEventListener('DOMContentLoaded', initPlayer);
+});
 </script>
 
 </body>
